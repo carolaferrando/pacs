@@ -23,6 +23,9 @@ struct parameters
   double hc;
   //! Number of elements
   int M;
+  //norma con cui calcolare l'errore
+  int norm;
+
   //! Constructor takes default values
   parameters():
     itermax(1000000),
@@ -34,7 +37,8 @@ struct parameters
     Te(20.),
     k(0.164),
     hc(1.e-6*200.),
-    M(100)
+    M(100),
+    norm(1)
   {}
 };
 //! Prints parameters

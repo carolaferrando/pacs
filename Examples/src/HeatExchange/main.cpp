@@ -61,8 +61,9 @@ int main(int argc, char** argv)
   const auto& Te=param.Te; // External temperature (Centigrades)
   const auto& k=param.k;  // Thermal conductivity
   const auto& hc=param.hc; // Convection coefficient
-  const auto&    M=param.M; // Number of grid elements
-  
+  const auto& M=param.M; // Number of grid elements
+  const auto& norm=param.norm;// Norma con cui calcolare l'errore  
+
   //! Precomputed coefficient for adimensional form of equation
   const auto act=2.*(a1+a2)*hc*L*L/(k*a1*a2);
 
@@ -84,24 +85,52 @@ int main(int argc, char** argv)
   
   int iter=0;
   double xnew, epsilon;
-     do
+     
+  if(norm==2){ //calcolo l'errore con la norma L2
+      do
        { epsilon=0.;
 
 	 // first M-1 row of linear system
          for(int m=1;m < M;m++)
          {   
 	   xnew  = (theta[m-1]+theta[m+1])/(2.+h*h*act);
-	   epsilon += (xnew-theta[m])*(xnew-theta[m]);
+	   epsilon += h*(xnew-theta[m])*(xnew-theta[m]);
 	   theta[m] = xnew;
          }
 
 	 //Last row
 	 xnew = theta[M-1]; 
-	 epsilon += (xnew-theta[M])*(xnew-theta[M]);
+	 epsilon += (1/2)*h*(xnew-theta[M])*(xnew-theta[M]);
 	 theta[M]=  xnew; 
 
 	 iter=iter+1;     
        }while((sqrt(epsilon) > toler) && (iter < itermax) );
+      }
+  if(norm==1){ //calcolo l'errore con la norma H1
+      double xold;
+
+      do
+       { epsilon=0.;
+	 xold=theta[0];
+	 // first M-1 row of linear system
+         for(int m=1;m < M;m++)
+         {   
+	   xnew  = (theta[m-1]+theta[m+1])/(2.+h*h*act);
+	   epsilon +=(h*(xnew-theta[m])*(xnew-theta[m]))
+	+((1/h) *((xnew-theta[m])-(theta[m-1]-xold))*((xnew-theta[m])-(theta[m-1]-xold)));
+	   xold=theta[m];
+	   theta[m] = xnew;
+         }
+
+	 //Last row
+	 xnew = theta[M-1]; 
+	 epsilon += ((1/2)*h*(xnew-theta[M])*(xnew-theta[M]))
+	+((1/h) *((xnew-theta[M])-(theta[M-1]-xold))*((xnew-theta[M])-(theta[M-1]-xold)));
+	 theta[M]=  xnew; 
+
+	 iter=iter+1;     
+       }while((sqrt(epsilon) > toler) && (iter < itermax) );
+  }
 
     if(iter<itermax)
       cout << "M="<<M<<"  Convergence in "<<iter<<" iterations"<<endl;

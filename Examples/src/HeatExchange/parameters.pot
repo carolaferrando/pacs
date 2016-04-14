@@ -20,3 +20,5 @@ k=0.164
 hc=200.0e-6
 # Number of elements
 M=11
+#Norma con cui voglio valutare il criterio d'arresto
+norm=2
