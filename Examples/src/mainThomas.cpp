@@ -1,6 +1,7 @@
 #include <iostream> // input output
 #include <cmath> // (for sqrt)
 #include <vector>
+#include <array>
 #include <tuple>
 #include "readParameters.hpp"
 #include "GetPot.hpp"
@@ -80,8 +81,8 @@ int main(int argc, char** argv)
   
   //Costruzione della matrice tramite 3 vettori
   std::vector<double> a(M-1), alpha(M-1),z(M-1);
-  std::vector<double> b(M-2), beta(M-2), y(M-1);
-  std::vector<double> c(M-2), gamma(M-2);
+  std::vector<double> b(M-1), beta(M-1), y(M-1);
+  std::vector<double> c(M-2);
   for(int i=0; i<M-1; ++i){
      a[i]= 2+(hc*hc)*act;
      b[i]= -1;
@@ -92,19 +93,19 @@ int main(int argc, char** argv)
   a[M-1]=1;
   //Costruzione dei vettori alpha, beta e gamma per le matrici L e U
   alpha[0]=a[0];
-  for (int k=0; k<M-1; ++k) {
-    beta[k]=b[k];
-    gamma[k]=c[k]/alpha[k];
-    alpha[k+1]=a[k+1]-beta[k]*gamma[k];
+  for (int k=1; k<M; ++k) {
+    beta[k]=alpha[k-1];
+    alpha[k]=a[k]-beta[k]*c[k-1];
 cout<<"alpha["<<k<<"]="<<alpha[k]<<endl;
 cout<<"beta["<<k<<"]="<<beta[k]<<endl;
   }
+  cout<<"vettori per matrici L e U creati correttamente"<< endl;
   //Risoluzione del sistema
   z[0]=To;
   y[0]=To;
-  for(int i=0; i<M-1; ++i){
-     z[i+1]=0;
-     y[i+1]=z[i+1]-gamma[i]*y[i];
+  for(int i=1; i<M; ++i){
+     z[i]=0;
+     y[i]=z[i]-beta[i]*y[i-1];
  cout<<"y["<<i<<"]="<<y[i]<<endl;
   } 
   theta[M]=y[M-1]/alpha[M-1];
@@ -112,7 +113,7 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
   theta[M+1]=theta[M];
   cout<<"vettori z e y creati e anche theta[M]" << endl;
   for(int j=M-1; j>0; j--){
-     theta[j]=(y[j-1]-gamma[j-1]*theta[j+1])/alpha[j-1];
+     theta[j]=(y[j-1]-c[j-1]*theta[j+1])/alpha[j-1];
   }
   theta[0]=To;
   theta[M+1]=theta[M];
@@ -163,6 +164,8 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
 
      // writing results with format
      // x_i u_h(x_i) u(x_i) and lauch gnuplot 
+    cout<<"baaaaaa"<<endl;
+
 
      Gnuplot gp;
    cout<<"Legge gnuplot gp"<<endl;
@@ -173,6 +176,7 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
      cout<<"Result file: result.dat"<<endl;
      ofstream f("result.dat");
 
+cout<<"Riesce ad aprire il file dei risultati"<<endl;
      for(int m = 0; m<= M; m++)
        {
 	 // \t writes a tab 
@@ -182,11 +186,13 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
 	 std::tie(coor[m],sol[m],exact[m])=
 	   std::make_tuple(m*h*L,Te*(1.+theta[m]),thetaa[m]);
        }
+cout<<"arriva fino qua"<<endl;
 
      // Using temporary files (another nice use of tie)
      gp<<"plot"<<gp.file1d(std::tie(coor,sol))<<
        "w lp title 'uh',"<< gp.file1d(std::tie(coor,exact))<<
        "w l title 'uex'"<<std::endl;
      f.close();
+ cout<<"arriva alla fine del programma"<<endl;
      return status;
 }
