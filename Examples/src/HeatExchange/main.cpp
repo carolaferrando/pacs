@@ -95,36 +95,24 @@ int main(int argc, char** argv)
     beta[k]=b[k];
     gamma[k]=c[k]/alpha[k];
     alpha[k+1]=a[k+1]-beta[k]*gamma[k];
-cout<<"alpha["<<k<<"]="<<alpha[k]<<endl;
-cout<<"beta["<<k<<"]="<<beta[k]<<endl;
-cout<<"gamma["<<k<<"]="<<gamma[k]<<endl;
   }
-cout<<"alpha[10]="<<alpha[9]<<endl;
   //Risoluzione del sistema
   z[0]=To-Te;
   y[0]=To-Te;
   for(int i=0; i<M-1; ++i){
      z[i+1]=0;
      y[i+1]=z[i+1]-gamma[i]*y[i];
- cout<<"y["<<i<<"]="<<y[i]<<endl;
   }
- cout<<"y[9]="<<y[9]<<endl; 
   theta[M]=y[M-1]/alpha[M-1];
-  cout<<"vettori z e y creati e anche theta[M]" << endl;
   for(int j=M-1; j>0; j--){
      theta[j]=(y[j-1]-beta[j-1]*theta[j+1])/alpha[j-1];
   }
   theta[0]=To-Te;  
   theta[M]=y[M-1]/alpha[M-1];
-  for (int k=0; k<M+2; ++k){
-    cout<<"theta["<<k<<"]="<<theta[k]<<endl;
-  }
 
   //trasformazione per riportarci a T e non a theta
-  cout<<"Nuovo vett delle temperature: "<<endl;
   for (int k=0; k<M+2; ++k){
     theta[k]=theta[k]+Te;
-    cout<<"T["<<k<<"]="<<theta[k]<<endl;
   }
 
 
