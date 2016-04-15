@@ -79,16 +79,15 @@ int main(int argc, char** argv)
      theta[m]=(1.-m*h)*(To-Te)/Te;
   
   //Costruzione della matrice tramite 3 vettori
-  std::vector<double> a(M-1), alpha(M-1),z(M-1);
-  std::vector<double> b(M-2), beta(M-2), y(M-1);
-  std::vector<double> c(M-2), gamma(M-2);
-  for(int i=0; i<M-1; ++i){
+  std::vector<double> a(M), alpha(M),z(M);
+  std::vector<double> b(M-1), beta(M-1), y(M);
+  std::vector<double> c(M-1), gamma(M-1);
+  for(int i=0; i<M-2; ++i){
      a[i]= 2+(hc*hc)*act;
      b[i]= -1;
      c[i]=-1;
   }
-  b[0]=0;
-  b[M-1]=-1;
+  //b[M-3]=-1;
   a[M-1]=1;
   //Costruzione dei vettori alpha, beta e gamma per le matrici L e U
   alpha[0]=a[0];
@@ -98,68 +97,40 @@ int main(int argc, char** argv)
     alpha[k+1]=a[k+1]-beta[k]*gamma[k];
 cout<<"alpha["<<k<<"]="<<alpha[k]<<endl;
 cout<<"beta["<<k<<"]="<<beta[k]<<endl;
+cout<<"gamma["<<k<<"]="<<gamma[k]<<endl;
   }
+cout<<"alpha[10]="<<alpha[9]<<endl;
   //Risoluzione del sistema
-  z[0]=To;
-  y[0]=To;
+  z[0]=To-Te;
+  y[0]=To-Te;
   for(int i=0; i<M-1; ++i){
      z[i+1]=0;
      y[i+1]=z[i+1]-gamma[i]*y[i];
  cout<<"y["<<i<<"]="<<y[i]<<endl;
-  } 
+  }
+ cout<<"y[9]="<<y[9]<<endl; 
   theta[M]=y[M-1]/alpha[M-1];
-  theta[0]=To;
-  theta[M+1]=theta[M];
   cout<<"vettori z e y creati e anche theta[M]" << endl;
   for(int j=M-1; j>0; j--){
-     theta[j]=(y[j-1]-gamma[j-1]*theta[j+1])/alpha[j-1];
+     theta[j]=(y[j-1]-beta[j-1]*theta[j+1])/alpha[j-1];
   }
-  theta[0]=To;
-  theta[M+1]=theta[M];
+  theta[0]=To-Te;  
+  theta[M]=y[M-1]/alpha[M-1];
   for (int k=0; k<M+2; ++k){
     cout<<"theta["<<k<<"]="<<theta[k]<<endl;
   }
 
+  //trasformazione per riportarci a T e non a theta
+  cout<<"Nuovo vett delle temperature: "<<endl;
+  for (int k=0; k<M+2; ++k){
+    theta[k]=theta[k]+Te;
+    cout<<"T["<<k<<"]="<<theta[k]<<endl;
+  }
 
-  /*// Gauss-Seidel
-  // epsilon=||x^{k+1}-x^{k}||
-  // Stopping criteria epsilon<=toler
-  
-  int iter=0;
-  double xnew, epsilon;
-     do
-       { epsilon=0.;
-
-	 // first M-1 row of linear system
-         for(int m=1;m < M;m++)
-         {   
-	   xnew  = (theta[m-1]+theta[m+1])/(2.+h*h*act);
-	   epsilon += (xnew-theta[m])*(xnew-theta[m]);
-	   theta[m] = xnew;
-         }
-
-	 //Last row
-	 xnew = theta[M-1]; 
-	 epsilon += (xnew-theta[M])*(xnew-theta[M]);
-	 theta[M]=  xnew; 
-
-	 iter=iter+1;     
-       }while((sqrt(epsilon) > toler) && (iter < itermax) );
-
-    if(iter<itermax)
-      cout << "M="<<M<<"  Convergence in "<<iter<<" iterations"<<endl;
-    else
-      {
-	cerr << "NOT CONVERGING in "<<itermax<<" iterations "<<
-	  "||dx||="<<sqrt(epsilon)<<endl;
-	status=1;
-      }*/
 
  // Analitic solution
-
-    std::cout << "M = " << M << std::endl;
     
-    vector<double> zeta(M+1);
+    vector<double> thetaa(M+1);
      for(int m=0; m <= M;m++)
         thetaa[m]=Te+(To-Te)*cosh(sqrt(act)*(1-m*h))/cosh(sqrt(act));
  
@@ -167,7 +138,7 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
       // x_i u_h(x_i) u(x_i) and lauch gnuplot 
  
       Gnuplot gp;
-    cout<<"Legge gnuplot gp"<<endl;
+
       std::vector<double> coor(M+1);
       std::vector<double> sol(M+1);
       std::vector<double> exact(M+1);
@@ -178,11 +149,11 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
       for(int m = 0; m<= M; m++)
         {
  	 // \t writes a tab 
-          f<<m*h*L<<"\t"<<Te*(1.+theta[m])<<"\t"<<thetaa[m]<<endl;
+          f<<m*h*L<<"\t"<<theta[m]<<"\t"<<thetaa[m]<<endl;
  	 // An example of use of tie and tuples!
          
  	 std::tie(coor[m],sol[m],exact[m])=
- 	   std::make_tuple(m*h*L,Te*(1.+theta[m]),thetaa[m]);
+ 	   std::make_tuple(m*h*L,theta[m],thetaa[m]);
         }
  
      // Using temporary files (another nice use of tie)
