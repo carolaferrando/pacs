@@ -157,36 +157,38 @@ cout<<"beta["<<k<<"]="<<beta[k]<<endl;
 
  // Analitic solution
 
-    vector<double> thetaa(M+1);
-     for(int m=0;m <= M;m++)
-       thetaa[m]=Te+(To-Te)*cosh(sqrt(act)*(1-m*h))/cosh(sqrt(act));
-
-     // writing results with format
-     // x_i u_h(x_i) u(x_i) and lauch gnuplot 
-
-     Gnuplot gp;
-   cout<<"Legge gnuplot gp"<<endl;
-     std::vector<double> coor(M+1);
-     std::vector<double> sol(M+1);
-     std::vector<double> exact(M+1);
-
-     cout<<"Result file: result.dat"<<endl;
-     ofstream f("result.dat");
-
-     for(int m = 0; m<= M; m++)
-       {
-	 // \t writes a tab 
-         f<<m*h*L<<"\t"<<Te*(1.+theta[m])<<"\t"<<thetaa[m]<<endl;
-	 // An example of use of tie and tuples!
+    std::cout << "M = " << M << std::endl;
+    
+    vector<double> zeta(M+1);
+     for(int m=0; m <= M;m++)
+        thetaa[m]=Te+(To-Te)*cosh(sqrt(act)*(1-m*h))/cosh(sqrt(act));
+ 
+      // writing results with format
+      // x_i u_h(x_i) u(x_i) and lauch gnuplot 
+ 
+      Gnuplot gp;
+    cout<<"Legge gnuplot gp"<<endl;
+      std::vector<double> coor(M+1);
+      std::vector<double> sol(M+1);
+      std::vector<double> exact(M+1);
+ 
+      cout<<"Result file: result.dat"<<endl;
+      ofstream f("result.dat");
+ 
+      for(int m = 0; m<= M; m++)
+        {
+ 	 // \t writes a tab 
+          f<<m*h*L<<"\t"<<Te*(1.+theta[m])<<"\t"<<thetaa[m]<<endl;
+ 	 // An example of use of tie and tuples!
          
-	 std::tie(coor[m],sol[m],exact[m])=
-	   std::make_tuple(m*h*L,Te*(1.+theta[m]),thetaa[m]);
-       }
-
+ 	 std::tie(coor[m],sol[m],exact[m])=
+ 	   std::make_tuple(m*h*L,Te*(1.+theta[m]),thetaa[m]);
+        }
+ 
      // Using temporary files (another nice use of tie)
-     gp<<"plot"<<gp.file1d(std::tie(coor,sol))<<
-       "w lp title 'uh',"<< gp.file1d(std::tie(coor,exact))<<
-       "w l title 'uex'"<<std::endl;
+      gp<<"plot"<<gp.file1d(std::tie(coor,sol))<<
+        "w lp title 'uh',"<< gp.file1d(std::tie(coor,exact))<<
+        "w l title 'uex'"<<std::endl;
      f.close();
      return status;
 }
